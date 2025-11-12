@@ -1,0 +1,45 @@
+Casos de Teste - Sistema de Gestao de Estoque para Mercado
+
+Formato: ID | Modulo | Objetivo | Passos | Resultado Esperado | Status
+
+CT001 | Login | Autenticar com credenciais válidas | 1) Abrir página de login 2) Informar usuario='admin' senha='123456' 3) Enviar | Usuário logado e redirecionado para menu principal (home); nome exibido | passado
+
+CT002 | Login | Tentar autenticar com senha inválida | 1) Abrir login 2) usuario='admin' senha='wrong' 3) Enviar | Mensagem de erro "Senha incorreta"; permanece na tela de login | passou
+
+CT003 | Login | Campos vazios no login | 1) Abrir login 2) Enviar sem preencher | Validação HTML5 / mensagem de preenchimento; não autentica | passou
+
+CT004 | Proteção de Rotas | Acessar rota protegida sem login | 1) Abrir index.php?action=produtos sem sessão | Redireciona para login | passou
+
+CT005 | Cadastro de Produto | Cadastrar produto obrigatório (nome) | 1) Acessar produtos 2) Preencher nome e demais campos 3) Enviar | Produto salvo; mensagem de sucesso; aparece na listagem | passou
+
+CT006 | Cadastro de Produto | Validar campos obrigatórios no cliente | 1) Tentar enviar form sem nome 2) Observar validação | Navegador impede envio (campo required) ou servidor retorna erro | passou
+
+CT007 | Cadastro de Produto | Unicidade codigo_barras | 1) Cadastrar produto com codigo_barras já existente 2) Enviar | Erro amigável informando duplicidade (constraint UNIQUE) | passou
+
+CT008 | Listagem de Produtos | Buscar produtos por nome | 1) Acessar produtos 2) Buscar por parte do nome 3) Enviar | Lista filtrada contendo produtos correspondentes | passou
+
+CT009 | Edição de Produto | Editar produto existente | 1) Na listagem, acionar editar 2) Alterar campos 3) Salvar | Dados atualizados; mensagem de sucesso; listagem mostra alterações | passou
+
+CT010 | Exclusão de Produto | Excluir produto e remover movimentações | 1) Excluir produto que possui movimentacoes 2) Confirmar | Produto removido e movimentacoes relacionadas deletadas (FK ON DELETE CASCADE) | passou
+
+CT011 | Registro de Movimentacao | Registrar entrada de estoque | 1) Acessar estoque 2) Selecionar produto 3) Tipo=entrada 4) Quantidade>0 5) Data 6) Enviar | Movimentacao registrada; estoque atualizado (incrementado) e mensagem de sucesso | passou
+
+CT012 | Registro de Movimentacao | Registrar saida sem estoque suficiente | 1) Selecionar produto com estoque menor que quantidade solicitada 2) Tipo=saida 3) Enviar | Operacao bloqueada; mensagem de erro informando estoque insuficiente | passou
+
+CT013 | Transacao PDO | Verificar atomicidade ao registrar movimentacao | 1) Simular erro no momento do insert de movimentacoes (ou forçar exception) 2) Observar rollback | Nenhuma das duas operacoes (atualizar estoque e inserir movimentacao) permanece parcial; rollback efetuado | passou
+
+CT014 | Alerta Estoque Baixo | Gerar alerta quando estoque < estoque_minimo | 1) Registrar saida que deixe estoque abaixo do minimo 2) Visualizar alerta | Mensagem de alerta (flash) informando deficit e produto | passou
+
+CT015 | Historico | Ver ultimas 20 movimentacoes | 1) Acessar estoque 2) Visualizar seção historico | Aparecem até 20 movimentacoes ordenadas por data_registro DESC | passou
+
+CT016 | Segurança SQL Injection | Testar tentativa de injeção no campo de busca | 1) No campo busca, enviar string maliciosa "' OR '1'='1" 2) Observar resultado | Aplicacao utiliza prepared statements; busca retorna apenas resultados esperados sem comprometer BD | passou
+
+CT017 | Segurança XSS | Testar campo nome com script | 1) Tentar cadastrar produto com nome "<script>alert(1)</script>" 2) Visualizar listagem | Saída é escapada (htmlspecialchars) — script não é executado; aparece como texto | passou
+
+CT018 | POST-Redirect-GET | Verificar PRG após cadastro/editar/movimentacao | 1) Submeter formulario de cadastro 2) Após submissao, pressionar F5 | Não há reenvio do formulário; não duplica operação | passou
+
+CT019 | Validacao Servidor | Enviar dados inválidos por manipulação (ex.: quantidade negativa) | 1) Enviar POST forjado com quantidade=-5 2) Observar resposta do servidor | Validação do servidor rejeita e retorna mensagem de erro; operação não realizada | passou
+
+CT020 | Fluxo Completo | Cenário: cadastrar produto, registrar entrada e saida, verificar historico e alerta | 1) Cadastrar produto X com estoque inicial 5 e minimo 10 2) Registrar entrada 10 3) Registrar saida 8 4) Verificar historico e status estoque | Operacoes executadas; historico mostra as movimentacoes; estoque refletido corretamente; alerta aparece se ficar abaixo do minimo | passou
+
+-- FIM dos casos de teste

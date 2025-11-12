@@ -1,0 +1,48 @@
+Requisitos Funcionais - Sistema de Gestao de Estoque para Mercado
+
+Lista numerada de requisitos funcionais (mínimo 35)
+
+RF001 - Autenticação: O sistema deve permitir que um usuário se autentique usando um nome de usuário e senha.
+RF002 - Validação de credenciais: O sistema deve validar o usuário e a senha usando credenciais armazenadas no banco de dados.
+RF003 - Logout: O sistema deve permitir que o usuário faça logout, encerrando sua sessão.
+RF004 - Proteção de rotas: Todas as páginas protegidas só devem ser acessíveis por usuários autenticados (verificação via sessão).
+RF005 - Exibir nome do usuário: O menu principal deve exibir o nome do usuário logado.
+RF006 - Menu principal: O sistema deve fornecer links para Cadastro de Produtos, Gestão de Estoque e um botão de logout.
+RF007 - Listagem de produtos: O sistema deve listar todos os produtos em uma tabela na página de produtos.
+RF008 - Busca de produtos: Deve ser possível buscar produtos por nome, código de barras e categoria.
+RF009 - Cadastro de produto: O sistema deve permitir cadastrar um novo produto via modal ou formulário (campos obrigatórios validados).
+RF010 - Edição de produto: O sistema deve permitir editar um produto existente via modal ou formulário.
+RF011 - Exclusão de produto: O sistema deve permitir excluir um produto (com confirmação) e remover suas movimentações via ON DELETE CASCADE.
+RF012 - Validação de campos (cliente): Os formulários de produtos e movimentações devem utilizar validação HTML5 (required, tipos) no cliente.
+RF013 - Validação de campos (servidor): O servidor deve validar todos os dados recebidos antes de inserir/atualizar no banco.
+RF014 - Exibição status estoque: A listagem de produtos deve mostrar visualmente o status do estoque (OK, Baixo, Esgotado) com base em estoque_atual e estoque_minimo.
+RF015 - Ordenação para estoque: A página de estoque deve listar produtos ordenados alfabeticamente (implementação com Bubble Sort em PHP/JS conforme exigido).
+RF016 - Seleção de produto para movimentação: Deve ser possível selecionar um produto da lista para registrar entrada ou saída de estoque.
+RF017 - Registro de movimentação: O sistema deve permitir registrar movimentações do tipo 'entrada' e 'saida' com quantidade e data.
+RF018 - Observação na movimentação: Ao registrar movimentação, o usuário pode adicionar uma observação (campo opcional).
+RF019 - Atualização de estoque com transação: Ao registrar movimentação, o estoque do produto deve ser atualizado dentro de uma transação PDO (BEGIN/COMMIT/ROLLBACK) garantindo consistência.
+RF020 - Controle de estoque mínimo: O sistema deve gerar um alerta (flash message) se o estoque ficar abaixo do estoque_minimo após uma movimentação.
+RF021 - Histórico de movimentações: A página de estoque deve mostrar o histórico das últimas 20 movimentações para o produto ou global, conforme requisito.
+RF022 - Proteção contra SQL Injection: Todas as operações de banco devem usar prepared statements com PDO.
+RF023 - Proteção contra XSS: Todas as saídas HTML devem passar por htmlspecialchars() antes de renderizar.
+RF024 - Senhas seguras: As senhas devem ser armazenadas no banco usando password_hash() e verificadas com password_verify().
+RF025 - POST-Redirect-GET: Após processamento de qualquer POST (cadastro, edição, movimentação, exclusão), o sistema deve redirecionar para evitar reenvio de formulários.
+RF026 - Flash Messages: O sistema deve suportar mensagens temporárias (sucesso/erro/aviso) usando $_SESSION para exibir após redirecionamento.
+RF027 - Paginação (opcional/escopo mínimo): A listagem de produtos deve suportar limite por página se houver muitos registros (mínimo: lista inteira sem quebra é aceitável; preferível simples paginação).
+RF028 - Dados obrigatórios produto: Os campos nome e estoque_atual devem ser obrigatórios no cadastro de produto.
+RF029 - Unicidade código de barras: O campo codigo_barras deve ser único no banco; tentativas de inserir duplicado devem exibir erro amigável.
+RF030 - Tipos e formatação: Preço custo e venda devem aceitar apenas valores numéricos (DECIMAL) e exibir formatação com 2 casas decimais na interface.
+RF031 - Relacionamentos: O sistema deve manter a integridade referencial entre produtos e movimentações (FK com ON DELETE CASCADE).
+RF032 - Logs mínimos: Sempre que ocorrer uma movimentação de estoque ou exclusão de produto, gravar a ação associando o usuário responsável (via campo usuario_id em movimentacoes).
+RF033 - Restrições de quantidade: Ao registrar uma saida, o sistema deve permitir que estoque_atual se torne zero ou positivo; não deve permitir estoque negativo (validar e bloquear a operação).
+RF034 - Data da movimentação: Ao registrar movimentação, o usuário deve informar a data (campo obrigatório); por padrão pode ser a data atual.
+RF035 - Interface sem frameworks: Toda a aplicação deve ser feita com PHP puro, HTML5, CSS3 (apenas estrutura inicialmente), JavaScript vanilla e PDO.
+RF036 - Roteamento por action: As rotas devem seguir o padrão ?action=..., correspondendo aos controllers e métodos especificados.
+RF037 - Mensagens de validação: O sistema deve apresentar mensagens de validação claras para cada erro de input (cliente/servidor).
+RF038 - Imports/seed: Devem existir scripts SQL (script_banco.sql) para criar e popular as tabelas com dados de teste (3 usuários, 15 produtos, 20 movimentações).
+RF039 - Acessibilidade mínima: Formulários devem ter labels associados a inputs e botões com textos descritivos.
+RF040 - Testes manuais: Deve ser fornecido documento com casos de teste (casos_de_teste.txt) cobrindo os módulos principais.
+
+Observações:
+- Os requisitos acima atendem ao enunciado e cobrem autenticação, CRUD, controle de estoque, segurança, transações, e documentação exigida.
+- RF027 (paginação) é opcional para escopo mínimo mas listado como recomendação; se preferir, a listagem poderá ser simples sem paginação.

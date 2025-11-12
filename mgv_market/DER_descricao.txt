@@ -1,0 +1,119 @@
+DER (Descricao do Modelo de Dados) - Sistema de Gestao de Estoque para Mercado
+
+Entidades e Atributos
+
+1) usuarios
+- id: INT, PRIMARY KEY, AUTO_INCREMENT
+- nome: VARCHAR(255), NOT NULL
+- usuario: VARCHAR(100), NOT NULL, UNIQUE
+- senha: VARCHAR(255), NOT NULL (hash gerado por password_hash)
+- data_cadastro: DATETIME, DEFAULT CURRENT_TIMESTAMP
+
+2) produtos
+- id: INT, PRIMARY KEY, AUTO_INCREMENT
+- nome: VARCHAR(255), NOT NULL
+- codigo_barras: VARCHAR(100), UNIQUE, NULLABLE
+- categoria: VARCHAR(100), NULLABLE -- Ex.: Alimentos, Bebidas, Higiene, Limpeza, Hortifruti, Padaria, Acougue, Outros
+- marca: VARCHAR(100), NULLABLE
+- preco_custo: DECIMAL(10,2), NULLABLE
+- preco_venda: DECIMAL(10,2), NULLABLE
+- estoque_atual: INT, NOT NULL, DEFAULT 0
+- estoque_minimo: INT, NOT NULL, DEFAULT 10
+- data_cadastro: DATETIME, DEFAULT CURRENT_TIMESTAMP
+
+3) movimentacoes
+- id: INT, PRIMARY KEY, AUTO_INCREMENT
+- produto_id: INT, NOT NULL, FOREIGN KEY -> produtos(id) ON DELETE CASCADE
+- usuario_id: INT, NOT NULL, FOREIGN KEY -> usuarios(id) ON DELETE CASCADE
+- tipo: ENUM('entrada','saida'), NOT NULL
+- quantidade: INT, NOT NULL
+- data_movimentacao: DATE, NOT NULL
+- data_registro: DATETIME, DEFAULT CURRENT_TIMESTAMP
+- observacao: TEXT, NULLABLE
+
+Relacionamentos e Cardinalidade
+- usuarios (1) -> (N) movimentacoes
+  - Um usuário pode registrar muitas movimentações; cada movimentação é registrada por um único usuário.
+- produtos (1) -> (N) movimentacoes
+  - Um produto pode ter muitas movimentações; cada movimentação refere-se a um único produto.
+
+Integridade Referencial
+- movimentacoes.produto_id referencia produtos.id com FOREIGN KEY e ON DELETE CASCADE.
+- movimentacoes.usuario_id referencia usuarios.id com FOREIGN KEY e ON DELETE CASCADE.
+- As chaves garantem que, ao excluir um produto ou usuário, as movimentações relacionadas sejam removidas automaticamente.
+
+Índices recomendados
+- UNIQUE INDEX em produtos.codigo_barras
+- INDEX em produtos.nome (para busca por nome)
+- INDEX em produtos.categoria (para filtro por categoria)
+- INDEX em movimentacoes.produto_id e movimentacoes.usuario_id (para joins e histórico)
+
+Regras de Negócio aplicadas no modelo
+- estoque_atual nunca deve ser negativo; as triggers/validações devem evitar subtrações que resultem em valor negativo.
+- Ao registrar movimentação do tipo 'entrada', incrementar estoque_atual do produto pela quantidade.
+- Ao registrar movimentação do tipo 'saida', decrementar estoque_atual do produto pela quantidade; se o resultado ficar abaixo de estoque_minimo, gerar alerta ao usuário.
+- Todas as atualizações de estoque devem ocorrer dentro de transações PDO para garantir atomicidade.
+
+Diagrama ASCII (DER simplificado)
+
++----------------+        +--------------------+        +--------------------+
+|    usuarios    |1      N|    movimentacoes   |N      1|      produtos      |
+|----------------|--------|--------------------|--------|--------------------|
+| id (PK)        |        | id (PK)            |        | id (PK)            |
+| nome           |        | produto_id (FK) ---+        | nome               |
+| usuario (UQ)   |        | usuario_id (FK) -----------+| codigo_barras (UQ) |
+| senha (hash)   |        | tipo (enum)        |        | categoria          |
+| data_cadastro  |        | quantidade         |        | marca              |
++----------------+        | data_movimentacao  |        | preco_custo        |
+                          | data_registro      |        | preco_venda        |
+                          | observacao         |        | estoque_atual      |
+                          +--------------------+        | estoque_minimo     |
+                                                           | data_cadastro      |
+                                                           +--------------------+
+
+Observações sobre o diagrama:
+- A seta logical representa: usuarios 1..N movimentacoes, produtos 1..N movimentacoes.
+- Os campos UQ significam UNIQUE.
+
+Notas de implementação técnica
+- Tipos SQL propostos: usar INT para chaves e quantidades; DECIMAL(10,2) para preços; DATETIME/DATE conforme o enunciado.
+- Ao criar as tabelas no script SQL, incluir as cláusulas FOREIGN KEY com ON DELETE CASCADE e índices sugeridos.
+- Não implementar colunas extras ou tabelas adicionais além das três solicitadas (usuarios, produtos, movimentacoes), conforme instrução do usuário.
+
+Exemplo de CREATE TABLE (esboço):
+
+CREATE TABLE usuarios (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(255) NOT NULL,
+  usuario VARCHAR(100) NOT NULL UNIQUE,
+  senha VARCHAR(255) NOT NULL,
+  data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE produtos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  nome VARCHAR(255) NOT NULL,
+  codigo_barras VARCHAR(100) UNIQUE,
+  categoria VARCHAR(100),
+  marca VARCHAR(100),
+  preco_custo DECIMAL(10,2),
+  preco_venda DECIMAL(10,2),
+  estoque_atual INT NOT NULL DEFAULT 0,
+  estoque_minimo INT NOT NULL DEFAULT 10,
+  data_cadastro DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE movimentacoes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  produto_id INT NOT NULL,
+  usuario_id INT NOT NULL,
+  tipo ENUM('entrada','saida') NOT NULL,
+  quantidade INT NOT NULL,
+  data_movimentacao DATE NOT NULL,
+  data_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
+  observacao TEXT,
+  FOREIGN KEY (produto_id) REFERENCES produtos(id) ON DELETE CASCADE,
+  FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
+);
+
+Fim do documento.
